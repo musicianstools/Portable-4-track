@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#121110">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Pocket Four-Track</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23121110'/%3E%3Ccircle cx='22' cy='32' r='9' fill='none' stroke='%23f0a33a' stroke-width='4'/%3E%3Ccircle cx='42' cy='32' r='9' fill='none' stroke='%23f0a33a' stroke-width='4'/%3E%3Ccircle cx='32' cy='52' r='4' fill='%23e2463a'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div id="app" class="app">
+
+  <!-- ===== DECK (top) ===== -->
+  <header class="deck">
+    <div class="deck-row deck-title">
+      <button class="title-btn" id="btnProject" aria-label="Project menu">
+        <span class="reel" aria-hidden="true"></span>
+        <span id="projName" class="proj-name">Untitled</span>
+        <svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+      </button>
+      <div class="save-state" id="saveState" title="Save status"><i class="led led-green"></i><span>Saved</span></div>
+      <div class="title-actions">
+        <button class="icon-btn" id="btnUndo" aria-label="Undo" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24"><path d="M9 7 4 12l5 5M4 12h11a5 5 0 0 1 0 10h-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="icon-btn" id="btnRedo" aria-label="Redo" title="Redo (Ctrl+Shift+Z)"><svg viewBox="0 0 24 24"><path d="m15 7 5 5-5 5M20 12H9a5 5 0 0 0 0 10h3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="icon-btn" id="btnNotes" aria-label="Song notes" title="Song notes (N)"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
+        <button class="icon-btn" id="btnExport" aria-label="Export" title="Export (E)"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5M5 14v6h14v-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </div>
+
+    <div class="deck-row deck-main">
+      <div class="counter-window" id="counter" aria-live="off">
+        <div class="counter-digits" id="counterTime">00:00.0</div>
+        <div class="counter-sub"><span id="counterBar">1.1</span><span id="counterState" class="cstate">STOP</span></div>
+      </div>
+      <div class="lamps">
+        <div class="lamp"><i class="led led-red" id="ledRec"></i><label>REC</label></div>
+        <div class="lamp"><i class="led led-amber" id="ledPlay"></i><label>PLAY</label></div>
+        <div class="lamp meter-lamp">
+          <div class="meter" id="inMeter" title="Input level"><div class="meter-fill" id="inMeterFill"></div></div>
+          <label><i class="led led-red led-sm" id="ledClip"></i>IN</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="deck-row deck-tools">
+      <button class="chip" id="btnTempo" title="Tempo & time signature (T)"><b id="bpmVal">100</b><small>BPM</small><span class="sep"></span><b id="tsVal">4/4</b></button>
+      <button class="chip toggle" id="btnClick" title="Metronome (M)"><i class="led"></i>CLICK</button>
+      <button class="chip toggle" id="btnDrums" title="Drum machine (D)"><i class="led"></i>DRUMS</button>
+      <button class="chip toggle" id="btnLoop" title="Loop (L)"><i class="led"></i>LOOP</button>
+      <button class="chip" id="btnSnap" title="Snap to grid"><small>SNAP</small><b id="snapVal">BEAT</b></button>
+      <button class="chip" id="btnMarker" title="Add marker at playhead (K)">＋MARK</button>
+      <span class="spacer"></span>
+      <button class="chip zoom" id="btnZoomOut" aria-label="Zoom out">−</button>
+      <button class="chip zoom" id="btnZoomIn" aria-label="Zoom in">＋</button>
+    </div>
+  </header>
+
+  <!-- ===== VIEWS ===== -->
+  <main class="views">
+    <section class="view view-studio active" id="view-studio" aria-label="Studio">
+      <div class="studio">
+        <div class="track-heads" id="trackHeads"></div>
+        <div class="timeline-wrap"><canvas id="timeline"></canvas>
+          <div class="countin" id="countin" hidden><span id="countinNum">4</span><small>COUNT-IN</small></div>
+          <div class="empty-hint" id="emptyHint">Tap <b>●</b> to record on the armed track.<br><small>Drag on the ruler to set a loop · Pinch or ＋/− to zoom</small></div>
+        </div>
+      </div>
+      <div class="clipbar" id="clipBar" hidden>
+        <button data-act="split">Split</button>
+        <button data-act="takes">Takes <b id="takeCount">1</b></button>
+        <button data-act="repeat">Repeat</button>
+        <button data-act="delete" class="danger">Delete</button>
+        <button data-act="close" aria-label="Deselect" class="x">✕</button>
+      </div>
+    </section>
+
+    <section class="view view-projects" id="view-projects" aria-label="Projects"></section>
+    <section class="view view-tools" id="view-tools" aria-label="Tools"></section>
+    <section class="view view-settings" id="view-settings" aria-label="Settings"></section>
+  </main>
+
+  <!-- ===== TRANSPORT ===== -->
+  <footer class="transport-dock">
+    <div class="transport" id="transport">
+      <button class="key" id="kRtz" aria-label="Return to zero" title="Return to zero (Home / Enter)"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="3" height="14" rx="1" fill="currentColor"/><path d="M19 5 9 12l10 7z" fill="currentColor"/></svg></button>
+      <button class="key" id="kRew" aria-label="Back one bar or marker" title="Back (←)"><svg viewBox="0 0 24 24"><path d="M11 6 3 12l8 6zM21 6l-8 6 8 6z" fill="currentColor"/></svg></button>
+      <button class="key" id="kStop" aria-label="Stop" title="Stop (S)"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.5" fill="currentColor"/></svg></button>
+      <button class="key key-play" id="kPlay" aria-label="Play" title="Play (Space)"><svg viewBox="0 0 24 24"><path d="M7 5v14l12-7z" fill="currentColor"/></svg></button>
+      <button class="key" id="kPause" aria-label="Pause" title="Pause (P)"><svg viewBox="0 0 24 24"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg></button>
+      <button class="key" id="kFf" aria-label="Forward one bar or marker" title="Forward (→)"><svg viewBox="0 0 24 24"><path d="m13 6 8 6-8 6zM3 6l8 6-8 6z" fill="currentColor"/></svg></button>
+      <button class="key key-rec" id="kRec" aria-label="Record" title="Record (R)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6.5" fill="currentColor"/></svg></button>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button data-view="studio" class="active"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="9" cy="12" r="2.3" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="15" cy="12" r="2.3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Studio</button>
+      <button data-view="projects"><svg viewBox="0 0 24 24"><path d="M4 6h6l2 2h8v10H4z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>Projects</button>
+      <button data-view="tools"><svg viewBox="0 0 24 24"><path d="M12 3a7 7 0 0 1 7 7M12 21V9m-4 4 4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Tools</button>
+      <button data-view="settings"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="16" cy="7" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="10" cy="17" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>Settings</button>
+    </nav>
+  </footer>
+</div>
+
+<div class="sheet-host" id="sheetHost" hidden>
+  <div class="sheet-scrim" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet-grip" data-close></div>
+    <div class="sheet-head"><h2 id="sheetTitle"></h2><button class="icon-btn" data-close aria-label="Close">✕</button></div>
+    <div class="sheet-body" id="sheetBody"></div>
+  </div>
+</div>
+<div class="toast-host" id="toasts" aria-live="polite"></div>
+<input type="file" id="fileImport" accept=".zip,.4track,application/zip" hidden>
+
+<script src="js/util.js"></script>
+<script src="js/store.js"></script>
+<script src="js/model.js"></script>
+<script src="js/synth.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/core.js"></script>
+<script src="js/tools.js"></script>
+<script src="js/timeline.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
